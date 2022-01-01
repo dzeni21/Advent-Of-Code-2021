@@ -19,25 +19,25 @@ for x in redovi:
         pom = []
 scanners.append(pom)
 
-def gen_all(scanner):
-    def helper(scanner):
+def genSve(scanner):
+    def pomFja(scanner):
         pom1 = [(x, y, z) for x, y, z in scanner]
         pom2 = [(x, -z, y) for x, y, z in scanner]
         pom3 = [(x, -y, -z) for x, y, z in scanner]
         pom4 = [(x, z, -y) for x, y, z in scanner]
         return [pom1, pom2, pom3, pom4]
-    ret = helper(scanner)
-    ret.extend(helper([(-x, z, y) for x, y, z in scanner]))
-    ret.extend(helper([(y, z, x) for x, y, z in scanner]))
-    ret.extend(helper([(-y, x, z) for x, y, z in scanner]))
-    ret.extend(helper([(z, y, -x) for x, y, z in scanner]))
+    ret = pomFja(scanner)
+    ret.extend(pomFja([(-x, z, y) for x, y, z in scanner]))
+    ret.extend(pomFja([(y, z, x) for x, y, z in scanner]))
+    ret.extend(pomFja([(-y, x, z) for x, y, z in scanner]))
+    ret.extend(pomFja([(z, y, -x) for x, y, z in scanner]))
 
-    ret.extend(helper([(-z, x, -y) for x, y, z in scanner]))
+    ret.extend(pomFja([(-z, x, -y) for x, y, z in scanner]))
     return ret
 
-sveOrijentacije = list(map(gen_all, scanners))
+sveOrijentacije = list(map(genSve, scanners))
 
-def getMatches(scanner1, scanner2):
+def dajMatch(scanner1, scanner2):
     gen1 = sveOrijentacije[scanner1]
     gen2 = sveOrijentacije[scanner2]
     ret = dict()
@@ -58,7 +58,7 @@ preklapanje = dict()
 for i in range(len(scanners)):
     for j in range(i + 1, len(scanners)):
         if (i, j) not in mem:
-            provjera = getMatches(i, j)
+            provjera = dajMatch(i, j)
             mem[(i, j)] = provjera
         else:
             provjera = mem[(i, j)]
@@ -75,7 +75,7 @@ while r:
     for j in preklapanje[i]:
         if not visible[j]:
             if (i, j) not in mem:
-                provjera = getMatches(i, j)
+                provjera = dajMatch(i, j)
                 mem[(i, j)] = provjera
             else:
                 provjera = mem[(i, j)]
