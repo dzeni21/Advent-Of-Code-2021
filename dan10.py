@@ -1,66 +1,97 @@
-
 with open("dan10.txt") as f:
     input = f.read().strip()
+podaci = input.split("\n")
 
-#definiramo simbole
-openBrackets = '([{<'
-closeBrackets = ')]}>'
-
-p1Points = {
+poeni = {
     ")": 3,
     "]": 57,
     "}": 1197,
     ">": 25137
 }
+parovi = ["()", "[]", "<>", "{}"]
 
-corrupted = dict() # prati oštećene simbole
-potrebnoZaIspravljanje = [] # prati šta nam je potrebno da ispravimo liniju
+def parse(linija):
+    stek = []
+    for c in linija:
+        checkUredu = False
+        for p in parovi:
+            if c == p[0]:
+                stek.append(c)
+                checkUredu = True
+            elif c == p[1]:
+                if stek[-1] == p[0]:
+                    stek.pop()
+                    checkUredu = True
 
-for red in input:
-    ocekivano = []
-    otvoreno = []
+        if not checkUredu:
+            return poeni[c]
 
-    for i, ch in enumerate(red):
-        otvoreno.append(ch)
+    return 0
 
-        # ako smo otvorili 'chunk', ovo prati odgovarajući closerBracket za chunk   
-        if ch in openBrackets:
-            ocekivano.append(closeBrackets[openBrackets.index(ch)])
-        else:
-            # chunk je ok
-            if closeBrackets.index(ch) == openBrackets.index(opened[-2]): 
-                opened = opened[:-2] 
-                ocekivano.pop() 
-            
-            # chunk nije ok
-            else:
-                if ch in corrupted: # prati koliko simbola su osteceni
-                    corrupted[ch] += 1
-                else:
-                    corrupted[ch] = 1
-                
-                ocekivano.clear()
-                break
+p1 = 0
+for linija in podaci:
+    p1 += parse(linija)
 
-    if ocekivano:
-        ocekivano.reverse()
-        potrebnoZaIspravljanje.append(ocekivano)
+print("P1: ", p1)
+
+errorPoeni = {
+    ")": 3,
+    "]": 57,
+    "}": 1197,
+    ">": 25137
+}
+incrPoeni = {
+    "(": 1,
+    "[": 2,
+    "{": 3,
+    "<": 4
+}
 
 
-allPoints = 0    
-for i,j in corrupted.items():
-    allPoints += p1Points[i] * j
+def parse(linija):
+    stek = []
+    for c in linija:
+        checkUredu = False
+        for p in parovi:
+            if c == p[0]:
+                stek.append(c)
+                checkUredu = True
+            elif c == p[1]:
+                if stek[-1] == p[0]:
+                    stek.pop()
+                    checkUredu = True
 
-print("P1: ", allPoints)
+        if not checkUredu:
+            return errorPoeni[c]
 
-p2Points = []
-for i in potrebnoZaIspravljanje:
-    score = 0
-    for ch in i:
-        score = score * 5 + closeBrackets.index(ch) + 1 
-    p2Points.append(score)
+    return 0
 
-p2Points.sort()
-ret = p2Points[len(p2Points)//2]
 
-print("P2: ", ret)   
+def complete(linija):
+    stek = []
+    p2 = 0
+    for c in linija:
+        for p in parovi:
+            if c == p[0]:
+                stek.append(c)
+            elif c == p[1]:
+                if stek[-1] == p[0]:
+                    stek.pop()
+
+    for c in stek[::-1]:
+        p2 *= 5
+        p2 += incrPoeni[c]
+
+    return p2
+
+
+# Izbrisi ostecene stvari
+podaci = [linija for linija in podaci if parse(linija) == 0]
+
+poeni = []
+for linija in podaci:
+    poeni.append(complete(linija))
+
+poeni.sort()
+p2 = poeni[len(poeni) // 2]
+print("P2: ", p2)
