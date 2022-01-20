@@ -1,47 +1,61 @@
+from itertools import product
+
 with open("dan20.txt") as f:
     input = f.read().strip().split("\n")
 
-algo = input.strip()
-skip = input
+algo = input[0]
+slikaInput = input[2:]
 
-D = dict()
-brojac = 0
-for red in input.stdin:
-    pom = list(red.strip())
-    for i in range(len(pom)):
-        D[(brojac, i)] = int(pom[i] == "#")
-    brojac += 1
+slika = set()
 
-def susjedni(i, j):
-    return [(i + x, j + y) for x in range(-1, 2) for y in range(-1, 2)]
+for red in range(len(slikaInput)):
+    for kol in range(len(slikaInput[0])):
+        if slikaInput[red][kol] == "#":
+            slika.add((red, kol))
 
-def bin2Dec(lst):
-    ret = 0
-    for i in lst:
-        ret *= 2
-        ret += i
-    return ret
 
-minX, maxX, minY, maxY = [0, 100]*2
-brojac = 0
-def istakni():
-    global D, minX, maxX, minY, maxY, brojac
-    noviD = dict()
-    for i in range(minX - 1, maxX + 1):
-        for j in range(minY - 1, maxY + 1):
-            noviD[(i, j)] = int(algo[bin2Dec(list(map(lambda x: D.get(x, brojac % 2), susjedni(i, j))))] == "#")
-    D = noviD
-    brojac += 1
-    minX, maxX, minY, maxY = minX - 1, maxX + 1, minY - 1, maxY + 1
+def get_granice(slika):
+    minRed = 1 << 60
+    maxRed = -(1 << 60)
+    minKol = 1 << 60
+    maxKol = -(1 << 60)
+    for red, kol in slika:
+        minRed, maxRed = min(minRed, red), max(maxRed, red)
+        minKol, maxKol = min(minKol, kol), max(maxKol, kol)
 
-for _ in range(2):
-    istakni()
+    return minRed, maxRed, minKol, maxKol
 
-p1 = sum(D.values())
-print("P1: ", p1)
+def enhance(slika, granice):
+    output = set()
+    minRed, maxRed, minKol, maxKol = granice
 
-for _ in range(48):
-    istakni()
-    
-p2 = sum(D.values())
-print("P2: ", p2)
+    for red in range(minRed, maxRed + 1):
+        for kol in range(minKol, maxKol + 1):
+            nPix = ""  # Binary string
+
+            for dred in range(-1, 2):
+                for dkol in range(-1, 2):
+                    nr = red + dred
+                    nk = kol + dkol
+                    nPix += "1" if (nr, nk) in slika else "0"
+
+            if algo[int(nPix, base=2)] == "#":
+                output.add((red, kol))
+
+    return output
+
+
+minX, maxX, minY, maxY = get_granice(slika)
+minX -= 200
+maxX += 200
+minY -= 200
+maxY += 200
+
+for i in range(2):
+    slika = enhance(slika, (minX, maxX, minY, maxY))
+    minX += 3
+    maxX -= 3
+    minY += 3
+    maxY -= 3
+
+print("P1: ", len(slika))
