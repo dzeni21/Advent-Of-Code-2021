@@ -67,7 +67,7 @@ def parse(linija):
     return 0
 
 
-def complete(linija):
+def zavrseno(linija):
     stek = []
     p2 = 0
     for c in linija:
@@ -90,7 +90,7 @@ podaci = [linija for linija in podaci if parse(linija) == 0]
 
 poeni = []
 for linija in podaci:
-    poeni.append(complete(linija))
+    poeni.append(zavrseno(linija))
 
 poeni.sort()
 p2 = poeni[len(poeni) // 2]
