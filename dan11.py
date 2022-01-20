@@ -1,39 +1,105 @@
-input = dict()
+import numpy as np
+from itertools import product
+
 with open("dan11.txt") as f:
-    for y, red in enumerate(f.readlines()):
-        for x, br in enumerate(red.strip()):
-            input[(x, y)] = int(br)
+    input = f.read().strip()
+podaci = np.array([[int(x) for x in list(i)]
+                for i in input.split("\n")], dtype=int)
 
-ukupnoFlashes = 0
-granica = ((1, -1), (1, 0), (1, 1), (0, -1), (0, 1), (-1, -1), (-1, 0), (-1, 1))
-korak = 0
+p1 = 0
 
-while 1:
-    korak += 1
-    for i in input:
-        input[i] += 1
+n = len(podaci)
 
-    stack = [i for i in input if input[i] == 10]
-    while stack:
-        x, y = stack.pop()
-        for dx, dy in granica:
-            x1 = x + dx
-            y1 = y + dy
-            if (x1, y1) in input and input[x1, y1] < 10:
-                input[x1, y1] += 1
-                if input[x1, y1] == 10:
-                    stack.append((x1, y1))
+okt = podaci
 
-    flashes = 0
-    for i in input:
-        if input[i] == 10:
-            input[i] = 0
-            flashes += 1
+for korak in range(100):
+    flash = np.zeros((n, n), dtype=bool)
 
-    ukupnoFlashes += flashes
-    if korak == 100:
-        print("P1: ", ukupnoFlashes)
+    for i, j in product(range(n), repeat=2):
+        okt[i, j] += 1
 
-    if flashes == 100:
-        print("P2: ", korak)
+    while True:
+        checkNastavi = False
+
+        promjena = np.zeros((n, n), dtype=int)
+
+        for i, j in product(range(n), repeat=2):
+            if not flash[i, j] and okt[i, j] > 9:
+
+                p1 += 1
+                flash[i, j] = True
+                checkNastavi = True
+
+                for di, dj in product(range(-1, 2), repeat=2):
+                    if di == dj == 0:
+                        continue
+
+                    ni = i + di
+                    nj = j + dj
+
+                    if not (0 <= ni < n and 0 <= nj < n):
+                        continue
+
+                    promjena[ni, nj] += 1
+
+        okt += promjena
+
+        if not checkNastavi:
+            break
+
+    for i, j in product(range(n), repeat = 2):
+        if flash[i, j]:
+            okt[i, j] = 0
+
+print("P1: ", p1)
+
+p2 = 0
+korak = 1
+
+while True:
+    flash = np.zeros((n, n), dtype=bool)
+
+    for i, j in product(range(n), repeat = 2):
+        okt[i, j] += 1
+
+    while True:
+        checkNastavi = False
+
+        promjena = np.zeros((n, n), dtype=int)
+
+        for i, j in product(range(n), repeat = 2):
+            if not flash[i, j] and okt[i, j] > 9:
+
+                p2 += 1
+                flash[i, j] = True
+                checkNastavi = True
+
+                for di, dj in product(range(-1, 2), repeat=2):
+                    if di == dj == 0:
+                        continue
+
+                    ni = i + di
+                    nj = j + dj
+
+                    if not (0 <= ni < n and 0 <= nj < n):
+                        continue
+
+                    promjena[ni, nj] += 1
+
+        okt += promjena
+
+        if not checkNastavi:
+            break
+
+    flashBrojac = 0
+    for i, j in product(range(n), repeat=2):
+        if flash[i, j]:
+            flashBrojac += 1
+            okt[i, j] = 0
+
+    if flashBrojac == n * n:
         break
+
+    korak += 1
+
+print("P2: ", korak)
