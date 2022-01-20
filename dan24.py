@@ -1,98 +1,48 @@
-import functools
+from itertools import product
 
-with open('dan24.txt') as f:
-	input = f.read().splitlines()
+with open("dan24.txt") as f:
+    input = f.read().strip().split("\n\n")[4:5]
 
-# podijeliti input na blokove koji počinju sa 'inp w'
-blok = []
-trenutniBlok = []
+koraci = [6, 12, 8, None, 7, 12, 2, None, 4, None, None, None, None, None]
+potrebno = [None, None, None, 11, None, None, None, 7, None, 6, 10, 15, 9, 0]
 
-for red in input:
-	instr = red.split(' ')
-	if instr[0] == 'inp':
-		assert(instr[1] == 'w')
-		blok.append(trenutniBlok)
-		trenutniBlok = []
-	else:
-		trenutniBlok.append(instr)
+inputSpace = product(range(9, 0, -1), repeat = 7)
 
-blok.append(trenutniBlok)
-blok = blok[1:]
+def radi(cifre):
+    z = 0
+    odg1 = [0] * 14
 
-slova = 'wxyz'
-dp = {}
+    cifreIdx = 0
 
-# vrati z vrijednost nakon bloka na 'index', s obzirom na trenutne vrijednosti 'w' i 'z'
-def asembler(index, w, z):
-	vrijednosti = [w, 0, 0, z]
-	# svaka instr je 'op a b;
-	for instr in blok[index]:
-		index = slova.index(instr[1])
-		# pohrani vrijednost b
-		if instr[2].lstrip('-').isdigit():
-			val = int(instr[2])
-		else:
-			val = vrijednosti[slova.index(instr[2])]
+    for i in range(14):
+        incr, modReq = koraci[i], potrebno[i]
 
-		if instr[0] == 'mul':
-			vrijednosti[index] *= val
-		elif instr[0] == 'add':
-			vrijednosti[index] += val
-		elif instr[0] == 'div':
-			vrijednosti[index] = int(vrijednosti[index]/val)
-		elif instr[0] == 'mod':
-			vrijednosti[index] = vrijednosti[index] % val
-		else:
-			assert(instr[0] == 'eql')
-			vrijednosti[index] = int(vrijednosti[index] == val)
+        if incr == None:
+            assert modReq != None
+            odg1[i] = ((z % 26) - modReq)
+            z //= 26
+            if not (1 <= odg1[i] <= 9):
+                return False
 
-	return vrijednosti[3]
+        else:
+            assert incr != None
+            z = z * 26 + cifre[cifreIdx] + incr
+            odg1[i] = cifre[cifreIdx]
+            cifreIdx += 1
 
-path = []
+    return odg1
 
-# vrati True ako je moguće doci do kraja, s obzirom na trenutnu vrijednost 'z' i blok na kojem se nalazimo
-@functools.cache
-def checkEndP1(index, curZ):
-	global path
-	if index == len(blok):
-		if curZ == 0:
-            #P1
-			print(''.join([str(i) for i in path]))
-			return True
-		return False
 
-	# pokušaj sa svim w od 9 => 1 pošto želimo maksimizirati w
-	for w in range(9, 0, -1):
-		path.append(w)
-		if checkEndP1(index + 1, asembler(index, w, curZ)):
-			return True
-		path = path[:-1]
-	return False
+for cifre in inputSpace:
+    odg1 = radi(cifre)
+    if odg1:
+        print("".join([str(i) for i in odg1]))
+        break
 
-checkEndP1(0, 0)
+inputSpace = product(range(1, 10), repeat = 7)
 
-# P2
-path = []
-
-@functools.cache
-def checkEndP2(index, curZ):
-	# nastavi povecavati granicu dok se ne dobije (najmanje) rjesenje
-	if curZ >= 1000000:
-		return False
-
-	global path
-	if index == len(blok):
-		if curZ == 0:
-			print(''.join([str(p) for p in path]))
-			return True
-		return False
-
-	# probaj sve w od 1 => 10 (prvo najmanji)
-	for w in range(1, 10):
-		path.append(w)
-		if checkEndP2(index + 1, asembler(index, w, curZ)):
-			return True
-		path = path[:-1]
-	return False
-
-checkEndP2(0, 0)
+for digits in inputSpace:
+    odg2 = radi(cifre)
+    if odg2:
+        print("".join([str(i) for i in odg2]))
+        break
