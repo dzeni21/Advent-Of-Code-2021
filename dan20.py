@@ -31,7 +31,7 @@ def enhance(slika, granice):
 
     for red in range(minRed, maxRed + 1):
         for kol in range(minKol, maxKol + 1):
-            nPix = ""  # Binary string
+            nPix = ""
 
             for dred in range(-1, 2):
                 for dkol in range(-1, 2):
