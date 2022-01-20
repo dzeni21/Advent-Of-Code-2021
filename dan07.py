@@ -1,13 +1,27 @@
 with open("dan07.txt") as f:
     input = f.read().strip().split(",")
 
-br = sorted(map(int, input().split(",")))
+podaci = [int(i) for i in input]
 
-# P2
-def fuel(i):
-    return sum(map(lambda arg: (abs(arg - i) * (abs(arg - i) + 1)) // 2, br))
-# P1
-medijan = br[len(br) // 2]
+p1 = 1 << 60
+maxPoz = max(podaci)
 
-print("P1: ", sum(map(lambda arg: abs(arg - medijan), br)))
-print("P2: ", fuel(sum(br) // len(br)))
+for poz in range(maxPoz):
+    r = 0
+    for i in podaci:
+        r += abs(poz - i)
+    p1 = min(p1, r)
+print("P1", p1)
+
+
+p2 = 1 << 60
+
+for pos in range(maxPoz):
+    r = 0
+    for i in podaci:
+        udaljenost = abs(i - poz)
+        cijena = udaljenost * (udaljenost + 1) // 2
+        r += cijena
+    p2 = min(p2, r)
+
+print("P2", p2)
