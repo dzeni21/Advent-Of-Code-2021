@@ -1,32 +1,96 @@
-with open("dan05.txt") as f:
+import numpy as np
+from os import link
+
+with open("dan04.txt") as f:
     input = f.read().strip().split("\n")
 
-d1 = dict()
-d2 = dict()
 
-for red in range(1, len(input)):
-    lCoord, dCoord = red.split(" -> ")
-    (x1, y1), (x2, y2) = lCoord.split(","), dCoord.split(",")
-    x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+def parseLiniju(linija):
+    poc, _, kraj = linija.split(" ")
+    poc = [int(i) for i in poc.split(",")]
+    kraj = [int(i) for i in kraj.split(",")]
+    return poc, kraj
 
-    if x1 == x2:
-        for i in range(min(y1, y2), max(y1, y2) + 1):
-            d1[(x1, i)] = d1.get((x1, i), 0) + 1
-            d2[(x1, i)] = d2.get((x1, i), 0) + 1
-    if y1 == y2:
-        for i in range(min(x1, x2), max(x1, x2) + 1):
-            d1[(i, y1)] = d1.get((i, y1), 0) + 1
-            d2[(i, y1)] = d2.get((i, y1), 0) + 1
+linije = [parseLiniju(x) for x in input]
 
-    # dijagonalno gornje lijevo - donje desno
-    if x1 + y1 == x2 + y2:
-        for i in range(min(x1, x2), max(x1, x2) + 1):
-            d2[(i, x1 + y1 - i)] = d2.get((i, x1 + y1 - i), 0) + 1
-    # dijagonalno donje lijevo - gornje desno
-    if x1 - y1 == x2 - y2:
-        for i in range(min(x1, x2), max(x1, x2) + 1):
-            d2[(i, i + y1 - x1)] = d2.get((i, i + y1 - x1), 0) + 1
+# Odbaci tacke koje nisu vertikalne ili horizontalne
+linije = [l for l in linije
+         if l[0][0] == l[1][0] or l[0][1] == l[1][1]]
 
-# Ispisi result
-print("P1: ", len(list(filter(lambda arg: arg > 1, d1.values()))))
-print("P2: ", len(list(filter(lambda arg: arg > 1, d2.values()))))
+# Pronadji granice mreze
+maxX = 0
+maxY = 0
+for i in linije:
+    maxX = max(maxX, i[0][0], i[1][0])
+    maxY = max(maxY, i[0][1], i[1][1])
+
+c = np.zeros((maxX + 1, maxY + 1))
+for i in linije:
+    poc, kraj = i
+    if poc[0] == kraj[0]:
+        down = min(poc[1], kraj[1])
+        up = max(poc[1], kraj[1])
+        for y in range(down, up + 1):
+            c[poc[0]][y] += 1
+
+    else:
+        assert poc[1] == kraj[1]
+        lijevo = min(poc[0], kraj[0])
+        desno = max(poc[0], kraj[0])
+        for x in range(lijevo, desno + 1):
+            c[x][poc[1]] += 1
+
+# Saznaj koliko je tacaka pokriveno vise puta
+p1 = 0
+for count in c.flatten():
+    p1 += count >= 2
+
+print("P1: ", p1)
+
+
+def znak(s):
+    if s > 0:
+        return 1
+    if s < 0:
+        return -1
+    return 0
+
+
+def parseLinijuDir(linija):
+    poc, _, kraj = linija.split(" ")
+    poc = [int(i) for i in poc.split(",")]
+    kraj = [int(i) for i in kraj.split(",")]
+
+    # Vektor smjera
+    smjer= [znak(kraj[0] - poc[0]), znak(kraj[1] - poc[1])]
+
+    return poc, kraj, smjer
+
+
+linije = [parseLinijuDir(line) for line in input]
+
+# Pronadji granice mreze
+maxX = 0
+maxY = 0
+for i in linije:
+    maxX = max(maxX, i[0][0], i[1][0])
+    maxY = max(maxY, i[0][1], i[1][1])
+
+c = np.zeros((maxX + 1, maxY + 1))
+for i in linije:
+    poc, kraj, smjer= i
+    p = poc
+    while p != kraj:
+        c[p[0], p[1]] += 1
+        p[0] += smjer[0]
+        p[1] += smjer[1]
+    c[kraj[0]][kraj[1]] += 1
+
+
+# Saznaj koliko bodova se dodjeljuje vise puta
+p2 = 0
+for count in c.flatten():
+    p2 += count >= 2
+
+c.transpose()
+print("P2", p2)
