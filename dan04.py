@@ -1,45 +1,78 @@
+import numpy as np
+import re
+
+class Board:
+    def __init__(s, br):
+        s.board = [
+            [[br[i][j], False] for j in range(5)]
+            for i in range(5)
+        ]
+
+    def winDetect(s):
+        for red in range(5):
+            if all([s.board[red][i][1] for i in range(5)]):
+                return True
+        for kol in range(5):
+            if all([s.board[i][kol][1] for i in range(5)]):
+                return True
+        return False
+
+    def getPoeni(s, prethodni):
+        suma = 0
+        for red in range(5):
+            for kol in range(5):
+                if not s.board[red][kol][1]:
+                    suma += s.board[red][kol][0]
+
+        return suma * prethodni
+
+    def markiraj(s, br):
+        for red in s.board:
+            for m in red:
+                if m[0] == br:
+                    m[1] = True
+
+
+def parse_board(linije):
+    return [[int(i) for i in re.split(" +", linija.strip())] for linija in linije]
+
+
 with open("dan04.txt") as f:
     input = f.read().strip().split("\n")
 
-sekvenca = list(map(int, input().split(",")))
+brojevi = [int(i) for i in input[0].split(",")]
 
-multiBingo = []
-bingo = []
+boards = []
+i = 2
+while i < len(input):
+    x = parse_board(input[i:i+5])
+    boards.append(Board(x))
+    i += 6
 
-for red in range(1, len(input)):
-    r = list(map(int,red.split()))
-    if not r:
-        multiBingo.append(bingo)
-        bingo = []
-    else:
-        bingo.append(r)
-multiBingo.append(bingo)
+odg = None
+for x in brojevi:
+    for b in boards:
+        b.markiraj(x)
+    for b in boards:
+        if b.winDetect():
+            ans = b.getPoeni(x)
+            break
 
-def transponiraj(x):
-    return [[x[i][j] for i in range(len(x))] for j in range(len(x[0]))]
+    if odg != None:
+        break
 
-def checkBingo(x):
-    for red in x:
-        if sum(red) == 0:
-            return True
-    for red in transponiraj(x):
-        if sum(red) == 0:
-            return True
+print("P1: ", odg)
 
-    # Pretpostavljamo da je x kvadratna matrica
-    return sum(x[i][i] for i in range(len(x))) == 0 or \
-        sum(x[i][-i-1] for i in range(len(x))) == 0
+pobjednici = []
+for x in brojevi:
+    for i in range(len(boards)):
+        boards[i].markiraj(x)
 
-p1Solved = False
-for k in sekvenca:
-    for b in multiBingo:
-        for j in range(len(b)):
-            b[j] = list(map(lambda arg: 0 if arg == k else arg, b[j]))
-        if checkBingo(b):
-            if not p1Solved:
-                print("P1: ", k * sum(map(sum, b)))
-                p1Solved = True
-            if len(multiBingo) == 1:
-                print("P2: ", k * sum(map(sum, b)))
+        if i not in pobjednici and boards[i].winDetect():
+            pobjednici.append(i)
 
-    multiBingo = list(filter(lambda arg: not checkBingo(arg), multiBingo))
+    if len(pobjednici) == len(boards):
+        break
+
+p2 = boards[pobjednici[-1]].getPoeni(x)
+print("P2: ", p2)
