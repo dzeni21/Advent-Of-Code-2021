@@ -86,8 +86,6 @@ for i in linije:
         p[1] += smjer[1]
     c[kraj[0]][kraj[1]] += 1
 
-
-# Saznaj koliko bodova se dodjeljuje vise puta
 p2 = 0
 for count in c.flatten():
     p2 += count >= 2
