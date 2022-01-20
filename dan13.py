@@ -47,31 +47,8 @@ for dot in tacke:
             new_tacke.add(dot)
 
 
-p2 = len(new_tacke)
-print("P2: ", p2)
-
-
-# Do the first fold
-for fold in savijanje:
-    new_tacke = set()
-
-    for dot in tacke:
-        if fold[0] != 0:
-            # Vertical fold
-            if dot[0] > fold[0]:
-                new_tacke.add(refleksija(dot, fold))
-            else:
-                new_tacke.add(dot)
-
-        else:
-            # Horizontal fold
-            if dot[1] > fold[1]:
-                new_tacke.add(refleksija(dot, fold))
-            else:
-                new_tacke.add(dot)
-
-    tacke = new_tacke
-
+p1 = len(new_tacke)
+print("P1: ", p1)
 
 for y in range(6):
     for x in range(50):
@@ -80,7 +57,4 @@ for y in range(6):
         else:
             print("..", end = "")
     print()
-
-p2 = len(new_tacke)
-print("P2: ", p2)
 
