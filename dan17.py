@@ -1,34 +1,97 @@
-from math import *
 with open("dan17.txt") as f:
     input = f.read().strip()
 
-# Parcing
-red = input().strip().split(" ")
-posX = list(map(int, red[2].replace("x=", "").replace(",", "").split("..")))
-posY = list(map(int, red[3].replace("y=", "").split("..")))
+podaci = input[len("target area: x="):]
+podaci = podaci.split(", y=")
+xRange = (
+    int(podaci[0][:podaci[0].index("..")]),
+    int(podaci[0][podaci[0].index("..")+2:])
+)
+yRange = (
+    int(podaci[1][:podaci[1].index("..")]),
+    int(podaci[1][podaci[1].index("..")+2:])
+)
+
+cilj = (xRange, yRange)
 
 
-# vx - brzina po x
-# vy - brzina po y
+def iteracija(poz, brzina):
+ # vrati novu poziciju i brzinu
+    new_poz = [0, 0]
+    new_brzina = [0, 0]
 
-def provjera(vx, vy):
-    x, y = 0, 0
-    while True:
-        x, y = x + vx, y + vy
-        vx = max(0, vx - 1) 
-        vy -= 1
-        if x in range(posX[0], posX[1] + 1) and y in range(posY[0], posY[1] + 1):
-            return True
-        if x > posX[1] or y < posY[0]:
-            return False
+    new_poz[0] = poz[0] + brzina[0]
+    new_poz[1] = poz[1] + brzina[1]
 
-maxY = 0
-valid = []
-for vx in range(int(sqrt(2 * posX[0])) - 2, posX[1] + 1):
-    for vy in range(posY[0], 250):
-        if provjera(vx, vy):
-            maxY = max(maxY, vy)
-            valid.append([vx, vy])
+    new_brzina[1] = brzina[1] - 1
+    if brzina[0] > 0:
+        new_brzina[0] = brzina[0] - 1
+    if brzina[0] < 0:
+        new_brzina[0] = brzina[0] + 1
 
-print("P1: ", maxY * (maxY + 1) // 2)
-print("P2: ", len(valid)) 
+    return new_poz, new_brzina
+
+
+def within(poz, cilj):
+    return (cilj[0][0] <= poz[0] <= cilj[0][1]) \
+        and (cilj[1][0] <= poz[1] <= cilj[1][1])
+
+
+def jeProslost(poz, brzina, cilj):
+    if brzina[0] > 0 and poz[0] > cilj[0][1]:
+        return True
+    if brzina[0] < 0 and poz[0] < cilj[0][0]:
+        return True
+    if brzina[1] < 0 and poz[1] < cilj[1][0]:
+        return True
+    return False
+
+
+def hit(brzina, cilj):
+   
+    # cilj = [xRange, yRange]
+
+    poz = (0, 0)
+    maxY = 0
+    while not jeProslost(poz, brzina, cilj):
+        maxY = max(maxY, poz[1])
+        if within(poz, cilj):
+            return True, maxY
+        poz, brzina = iteracija(poz, brzina)
+
+    return False, None
+
+
+# limit y brzine
+maxYv = abs(cilj[1][0])
+
+yv = maxYv
+while yv >= cilj[1][0]:
+    done = False
+    for xv in range(-100, 101):
+        works, maxY = hit((xv, yv), cilj)
+        if works:
+            done = True
+            break
+
+    if done:
+        break
+
+    print(yv)
+
+    yv -= 1
+
+
+odg = 0
+yv = maxYv
+while yv >= cilj[1][0]:
+    done = False
+    for xv in range(-100, 101):
+        works = hit((xv, yv), cilj)
+        if works:
+            odg += 1
+            done = True
+
+    yv -= 1
+
+print(odg)
