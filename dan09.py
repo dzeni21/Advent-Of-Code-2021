@@ -1,40 +1,88 @@
+import numpy as np
+
 with open("dan09.txt") as f:
     input = f.read().strip().split("\n")
+    podaci = [[int(i) for i in list(line)] for line in input]
 
+redovi = len(podaci)
+kolone = len(podaci[0])
 
-N = len(input)
-M = len(input[0])
+p1 = 0
+# Find low points
+for red in range(redovi):
+    for kol in range(kolone):
+        low = True
+        for i in [(0, 1), (0, -1), (-1, 0), (1, 0)]:
+            rr = red + i[0]
+            kk = kol + i[1]
 
-for red in range(1, len(input)):
-    M.append(list(map(int, red.strip())))
+            if not ((0 <= rr and rr < redovi) and (0 <= kk and kk < kolone)):
+                continue
+            if podaci[rr][kk] <= podaci[red][kol]:
+                low = False
+                break
 
+        if low:
+            p1 += podaci[red][kol] + 1
 
-def susjedni(y,x):   # gore, dole, lijevo, desno
-    s = [(y-1,x),(y+1,x),(y,x-1),(y,x+1)]
-    return [(a,b) for a,b in s if 0 <= b < M and 0 <= a < N]
-
-def getBasin(y,x): # Fja za P2
-    ret = {(y,x)}
-    for a,b in susjedni(y,x):
-        if input[a][b] > input[y][x] and input[a][b] < 9:
-            ret |= getBasin(a,b)
-    return ret
-
-def bigBasin(lowPoint):
-    bsize= sorted([len(getBasin(y, x)) for y, x in lowPoint])
-    return (bsize[-3] * bsize[-2] * bsize[-1])
-    
-
-# P1
-lowPoints = []
-sum = 0
-
-for i in range(len(N)):
-    for j in range(len(M)):
-        if all(input[i][j] < input[a][b] for a,b in susjedni(j,i)):
-            sum += input[i][j] + 1
-            lowPoints.append([i, j])
-print("P1: ", sum)
+print("P1: ", p1)
 
 # P2
-print("P2: ", bigBasin(lowPoints))
+
+low = []
+trenutniID = 1
+ids = np.zeros((redovi, kolone), dtype=int)
+
+# Find low points
+for red in range(redovi):
+    for kol in range(kolone):
+        jeLow = True
+        for i in [(0, 1), (0, -1), (-1, 0), (1, 0)]:
+            rr = red + i[0]
+            kk = kol + i[1]
+
+            if not ((0 <= rr and rr < redovi) and (0 <= kk and kk < kolone)):
+                continue
+
+            if podaci[rr][kk] <= podaci[red][kol]:
+                jeLow = False
+                break
+
+        if jeLow:
+            low.append((red, kol))
+
+for red, kol in low:
+    stek = [(red, kol)]
+    posjeta = set()
+    while len(stek) > 0:
+        red, kol = stek.pop()
+
+        if (red, kol) in posjeta:
+            continue
+        posjeta.add((red, kol))
+
+        ids[red, kol] = trenutniID
+
+        for i in [(0, 1), (0, -1), (-1, 0), (1, 0)]:
+            rr = red + i[0]
+            kk = kol + i[1]
+
+            if not ((0 <= rr and rr < redovi) and (0 <= kk and kk < kolone)):
+                continue
+
+            if podaci[rr][kk] == 9:
+                continue
+
+            stek.append((rr, kk))
+
+    trenutniID += 1
+
+# Pronadji velicine najvecih basins
+vel = [0] * trenutniID
+
+for x in ids.flatten():
+    vel[x] += 1
+vel = vel[1:]
+
+vel.sort()
+print("P2: ",vel[-1] * vel[-2] * vel[-3])
