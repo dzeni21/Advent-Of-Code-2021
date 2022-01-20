@@ -1,48 +1,86 @@
-import string
-
 with open("dan13.txt") as f:
-    input = f.read().strip()
+    tacke = set()
+    while True:
+        linija = f.readline().strip()
+        if linija == "":
+            break
+        tacke.add(tuple([int(i) for i in linija.split(",")]))
 
-naredba = []
-d = []
-tacke = True
+    savijanje = []
+    while True:
+        linija = f.readline().strip()
 
-for red in input.stdin:
-    red = red.strip()
-    if not red:
-        tacke = False
-        continue
-    if tacke:
-        red = red.split(",")
-        d.append([int(red[0]), int(red[1])])
-    else:
-        red = red.split("=")
-        naredba.append([red[0][-1], int(red[1])])
+         # VAŽNO: provjeri da li se ulazni fajl zavrsava sa novim redom
+        if linija == "":
+            break
 
-x = max(map(lambda arg: arg[1], d)) + 1
-y = max(map(lambda arg: arg[0], d)) + 1
-
-for coord, n in naredba:
-    noviD = dict()
-    for px, py in d:
-        if coord == 'x':
-            noviD[(n - abs(px - n), py)] = True
+        fold = linija[len("fold along "):]
+        if fold[0] == "y":
+            savijanje.append((0, int(fold[2:])))
         else:
-            noviD[(px, n - abs(py - n))] = True
-    d = noviD
-    if coord == 'x':
-        y = max(map(lambda arg: arg[0], d.keys())) + 1
+            savijanje.append((int(fold[2:]), 0))
+
+
+def refleksija(tacka, linija):
+    if linija[0] != 0:
+        return (2*linija[0] - tacka[0], tacka[1])
+    return (tacka[0], 2*linija[1] - tacka[1])
+
+
+# prvo savijanje
+new_tacke = set()
+fold = savijanje[0]
+
+for dot in tacke:
+    if fold[0] != 0:
+        # vertikalno
+        if dot[0] > fold[0]:
+            new_tacke.add(refleksija(dot, fold))
+        else:
+            new_tacke.add(dot)
+
     else:
-        x = max(map(lambda arg: arg[1], d.keys())) + 1
-    if (coord, n) == tuple(naredba[0]):
-        print("P1: ", len(d))
+        # horizontalno
+        if dot[1] > fold[1]:
+            new_tacke.add(refleksija(dot, fold))
+        else:
+            new_tacke.add(dot)
 
-final = []
-for _ in range(x):
-    final.append(["."] * y)
-for dx, dy in d:
-    final[dy][dx] = "#"
 
-print("P2: ")
-for row in final:
-    print(str().join(row))
+p2 = len(new_tacke)
+print("P2: ", p2)
+
+
+# Do the first fold
+for fold in savijanje:
+    new_tacke = set()
+
+    for dot in tacke:
+        if fold[0] != 0:
+            # Vertical fold
+            if dot[0] > fold[0]:
+                new_tacke.add(refleksija(dot, fold))
+            else:
+                new_tacke.add(dot)
+
+        else:
+            # Horizontal fold
+            if dot[1] > fold[1]:
+                new_tacke.add(refleksija(dot, fold))
+            else:
+                new_tacke.add(dot)
+
+    tacke = new_tacke
+
+
+for y in range(6):
+    for x in range(50):
+        if (x, y) in new_tacke:
+            print("##", end = "")
+        else:
+            print("..", end = "")
+    print()
+
+p2 = len(new_tacke)
+print("P2: ", p2)
+
