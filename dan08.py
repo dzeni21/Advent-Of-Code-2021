@@ -1,55 +1,79 @@
+import itertools
+from pprint import pprint
+
 with open("dan08.txt") as f:
     input = f.read().strip().split("\n")
+    podaci = [linija[linija.index("|") + 2:].split(" ") for linija in input]
 
-lijevo = []
-desno = []
-skup = [2, 4, 3, 7]
+uredu = [2, 4, 3, 7]
+p1 = 0
+for output in podaci:
+    for cifra in output:
+        if len(cifra) in uredu:
+            p1 += 1
 
-# Parse
-for red in range(1, len(input)):
-    red = red.strip().split(" | ")
-    lijevo.append(red[0].split())
-    desno.append(red[1].split())
-    # P1
-    print("P1: ", sum(map(lambda arg: len(list(filter(lambda p: len(p) in skup, arg))), desno)))
+print("P1: ", p1)
 
-# P2
-for i in range(len(desno)):
-    map = dict()
-    for j in lijevo[i]:
-        if len(j) == 2:
-            jedan = str().join(sorted(j))
-            map[jedan] = '1'
-        elif len(j) == 3:
-            sedam = str().join(sorted(j))
-            map[sedam] = '7'
-        elif len(j) == 4:
-            cetiri = str().join(sorted(j))
-            map[cetiri] = '4'
-        elif len(j) == 7:
-            osam = str().join(sorted(j))
-            map[osam] = '8'
+with open("dan08.txt") as f:
+    input = f.read().strip().split("\n")
+    podaci = [
+        [
+            sorted(linija[:linija.index("|") - 1].split(" ")),
+            linija[linija.index("|") + 2:].split(" ")
+        ] for linija in input
+    ]
 
-    for j in lijevo[i]:
-        if len(j) == 6:
-            if set(cetiri).issubset(set(j)):
-                devet = str().join(sorted(j))
-                map[devet] = '9'
-            elif set(jedan).issubset(set(j)):
-                nula = str().join(sorted(j))
-                map[nula] = '0'
-            else:
-                sest = str().join(sorted(j))
-                map[sest] = '6'
+cifreKljuc = [
+    "abcefg",
+    "cf",
+    "acdeg",
+    "acdfg",
+    "bcdf",
+    "abdfg",
+    "abdefg",
+    "acf",
+    "abcdefg",
+    "abcdfg"
+]
 
-    for j in lijevo[i]:
-        if len(j) == 5:
-            if not (set(nula) - set(sest)).issubset(set(j)):
-                map[str().join(sorted(j))] = '5'
-            elif set(jedan).issubset(set(j)):
-                map[str().join(sorted(j))] = '3'
-            else:
-                map[str().join(sorted(j))] = '2'
-    
-    desno[i] = int(str().join(list(map(lambda arg: map[str().join(sorted(arg))], desno[i]))))
-print("P2: ", sum(desno))
+cifre = sorted(cifreKljuc)
+cifre = tuple(cifre)
+
+p2 = 0
+
+for linija in podaci:
+    hint = linija[0]
+    assert len(hint) == 10
+    num = linija[1]
+
+    # Probaj sve moguce zamjene
+    for sig in itertools.permutations("abcdefg"):
+        # Ponovno kodiranje cifara
+        kljuc = {}
+        for c in "abcdefg":
+            kljuc[c] = sig["abcdefg".index(c)]
+
+        nHint = [] * 10
+        for h in hint:
+            x = ""
+            for char in h:
+                x += kljuc[char]
+            x = "".join(sorted(x))
+            nHint.append(x)
+
+        nHint.sort()
+
+        if tuple(nHint) == cifre:
+            # Uzmi broj koji bi trebao biti
+            br = []
+            for i in num:
+                x = ""
+                for char in i:
+                    x += kljuc[char]
+                x = "".join(sorted(x))
+                br.append(cifreKljuc.index(x))
+
+            p2 += int("".join([str(i) for i in br]))
+            break
+
+print("P2: ", p2)
