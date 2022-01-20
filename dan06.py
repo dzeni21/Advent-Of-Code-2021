@@ -1,21 +1,17 @@
 with open("dan06.txt") as f:
     input = f.read().strip().split(",")
+    podaci = [int(i) for i in input]
 
-x = [0] * 10
-br = list(map(int, input().split(",")))
+dani = 80
 
-for i in br:
-    x[i] += 1
-
-for j in range(256):
-    pom = [0] * 10
-    for i in range(10):
-        if i:
-            pom[i - 1] += x[i]
+for _ in range(days):
+    n = len(podaci)
+    for i in range(n):
+        if podaci[i] == 0:
+            podaci[i] = 6
+            podaci.append(8)
         else:
-            pom[6] += x[0]
-            pom[8] += x[0]
-    x = pom
-    if j == 79: 
-        print("P1: ", sum(x))
-print("P2:", sum(x))
+            podaci[i] -= 1
+
+p1 = len(podaci)
+print(p1)
