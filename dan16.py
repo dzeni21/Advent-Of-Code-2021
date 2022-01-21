@@ -117,7 +117,7 @@ def parseP2(x, y=-1):
         prethodniIndex = None
         while index != None:
             prethodniIndex = index
-            x, index = parse(index, j=kraj)
+            x, index = parseP2(index, j=kraj)
             subPacks.append(x)
         subPacks = subPacks[:-1]  # Ukloni posljednji
         nxtStart = prethodniIndex
@@ -127,7 +127,7 @@ def parseP2(x, y=-1):
         remSubPacks = int(data[x+7:x+18], base=2)
         index = x + 18
         while remSubPacks > 0:
-            x, index = parse(index)
+            x, index = parseP2(index)
             remSubPacks -= 1
             subPacks.append(x)
         nxtStart = index
